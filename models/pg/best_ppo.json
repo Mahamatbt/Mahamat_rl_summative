@@ -1,0 +1,9 @@
+{
+  "run": "ppo_07_lambda_0.8",
+  "eval_return": 20.005979563530026,
+  "eval_return_std": 20.04643725414129,
+  "eval_served_pct": 87.30866456775547,
+  "eval_failure_rate": 0.0,
+  "eval_repairs": 11.6,
+  "frames": 301056
+}

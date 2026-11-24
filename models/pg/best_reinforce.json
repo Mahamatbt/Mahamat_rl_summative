@@ -1,0 +1,9 @@
+{
+  "run": "reinforce_04_gamma_0.95",
+  "eval_return": -117.85322885206378,
+  "eval_return_std": 43.17947866321283,
+  "eval_served_pct": 70.07557392102846,
+  "eval_failure_rate": 0.05,
+  "eval_repairs": 5.3,
+  "frames": 260100
+}

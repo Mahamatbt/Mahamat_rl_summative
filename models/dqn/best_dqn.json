@@ -1,0 +1,9 @@
+{
+  "run": "dqn_03_lr_1e-4",
+  "eval_return": 53.81657208205327,
+  "eval_return_std": 20.45658674918253,
+  "eval_served_pct": 91.23528794437885,
+  "eval_failure_rate": 0.0,
+  "eval_repairs": 13.6,
+  "frames": 200000
+}

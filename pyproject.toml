@@ -1,0 +1,26 @@
+[project]
+name = "water-dispatch-rl"
+version = "0.1.0"
+description = "RL agent that dispatches a maintenance crew to rural water points (DQN, REINFORCE, PPO, A2C with TorchRL)"
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "torch>=2.5",
+    "torchrl>=0.8",
+    "tensordict>=0.8",
+    "gymnasium>=1.0",
+    "numpy>=1.26",
+    "pygame>=2.6",
+    "PyOpenGL>=3.1.7",
+    "matplotlib>=3.8",
+]
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

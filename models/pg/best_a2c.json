@@ -1,0 +1,9 @@
+{
+  "run": "a2c_04_gamma_0.95",
+  "eval_return": -32.72990614896059,
+  "eval_return_std": 30.912798513465845,
+  "eval_served_pct": 76.90763478945297,
+  "eval_failure_rate": 0.0,
+  "eval_repairs": 7.6,
+  "frames": 280000
+}

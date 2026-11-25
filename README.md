@@ -76,7 +76,7 @@ The full discussion is in the report.
 
 ## Report and beginner's guide
 
-- `report/Mahamat_RL_Summative_Report.pdf`: the assignment report (7 pages).
+- `report/Mahamat_RL_Summative_Report.pdf`: the assignment report (8 pages).
 - `report/RL_Beginners_Guide.pdf`: a step-by-step explanation for readers with no RL background, including the video script.
 
 To rebuild both from the logs:
@@ -92,11 +92,29 @@ uv run --with reportlab python report/build_guide.py
 git clone https://github.com/Mahamatbt/Mahamat_rl_summative.git
 cd Mahamat_rl_summative
 uv sync
-uv run main.py                     # 3D simulation of the best trained agent + verbose terminal log
+uv run play.py                     # 3D simulation of the best trained agent + verbose terminal log (alias of main.py)
+uv run main.py                     # same
 uv run main.py --algo ppo          # a specific algorithm (dqn | reinforce | ppo | a2c | heuristic | random)
 uv run main.py --no-render         # terminal only
 uv run main.py compare             # evaluate all best models vs baselines, regenerate report figures
-uv run pytest                      # environment + TorchRL spec tests
+uv run pytest                      # environment, TorchRL spec and deployment API tests
+```
+
+## Using a trained agent (API)
+
+Checkpoints (`models/<dqn|pg>/best_<algo>.pt`) contain the network weights, run config, observation/action sizes
+and metrics; `deployment/api.py` rebuilds the policy from that file alone.
+
+```python
+from deployment.api import DispatchAgent
+agent = DispatchAgent("dqn")
+agent.recommend(obs)   # {"action": 6, "action_name": "drive to WP06", "score_type": "q_value", "scores": [...], ...}
+```
+
+```bash
+uv run python -m deployment.api --algo dqn --port 8000     # JSON HTTP server (standard library only)
+curl -s localhost:8000/health
+curl -s -X POST localhost:8000/recommend -d '{"observation": [ ...86 floats... ]}'
 ```
 
 ## Training
@@ -125,6 +143,8 @@ The sweep configurations are the `SWEEP` / `SWEEPS` lists in `training/dqn_train
 
 ```
 ├── main.py                    # simulation entry point (+ train / compare subcommands)
+├── play.py                    # alias of main.py: run the trained agent
+├── deployment/api.py          # inference API (Python + HTTP JSON)
 ├── environment/
 │   ├── custom_env.py          # WaterDispatchEnv (Gymnasium) + heuristic baseline
 │   ├── rendering.py           # 3D OpenGL visualisation

@@ -121,11 +121,39 @@ def build():
 
     s.append(P("2.3 Observation Space", st["h2"]))
     s.append(P(
-        "Box(86,), all values normalised to [0, 1]: crew location one-hot (11 = 10 points + depot); fuel, budget, minor "
-        "kits and major kits as fractions of capacity; day/90; and for each of the 10 points: last known status one-hot "
-        "(3), days since last observation, population served, failure-risk score, and distance from the crew. The risk score "
-        "is a logistic function of pump age, extraction type and payment type, with coefficients chosen to match the "
-        "direction of effects in the capstone. Predictions from the real classifier can be loaded from a CSV instead.",
+        "Box(86,), float32, every element in [0, 1]. Indices 0-15 describe the crew; then each water point k contributes "
+        "7 values at indices 16 + 7k. The table maps every element to its meaning, encoding, source and update cadence. "
+        "The <b>true</b> status of each point is hidden: the agent only sees the status recorded at its last visit.",
+        st["body"]))
+    s.append(table([
+        ["Idx", "Observation", "Encoding / range", "Source or simulation rule", "Updated"],
+        ["0-10", "Crew location", "one-hot, 11 (10 points + depot)", "Set by drive (0-9) or depot (10) actions", "every step"],
+        ["11", "Fuel", "litres / 60", "−0.25 L per km driven; refilled to 60 L at depot", "every step"],
+        ["12", "Budget", "USD / 6,000, clipped", "−labour per repair, −fuel and kit restock cost at depot", "every step"],
+        ["13-14", "Minor / major kits", "count / 4, count / 2", "−1 per repair; restocked at depot", "every step"],
+        ["15", "Day", "day / 90", "+1 per step (one working day)", "every step"],
+        ["16+7k +0..2", "Last known status of k", "one-hot: functional / needs repair / non-functional",
+         "Initial survey sampled from Pump it Up class distribution; overwritten with true status only on inspect or repair at k",
+         "on visit"],
+        ["16+7k +3", "Days since k observed", "days / 90, clipped", "Starts at 0-30 (survey age); +1 per day; reset to 0 on inspect/repair",
+         "every step"],
+        ["16+7k +4", "Population of k", "people / max in district", "Pump it Up-style population 100-4,000, or capstone CSV",
+         "fixed per map"],
+        ["16+7k +5", "Failure risk of k", "probability [0, 1]",
+         "Logistic of pump age, extraction type, payment type (capstone effect directions), or classifier output via CSV. "
+         "Drives hidden daily degradation: P(fail) = 0.004 + 0.03·risk, P(break) = 0.03 + 0.07·risk",
+         "fixed per map"],
+        ["16+7k +6", "Distance crew → k", "km / max pairwise distance", "Euclidean distance on 30 × 30 km map from current location",
+         "every step"],
+    ], [1.9 * cm, 2.8 * cm, 3.1 * cm, W - 9.6 * cm, 1.8 * cm], st))
+    s.append(P(
+        "<b>Agent-input path:</b> <font face='Courier'>WaterDispatchEnv._obs()</font> builds the NumPy vector → TorchRL "
+        "<font face='Courier'>GymWrapper</font> exposes it as the <font face='Courier'>\"observation\"</font> tensor "
+        "(the <font face='Courier'>StepCounter</font>, <font face='Courier'>RewardSum</font> and "
+        "<font face='Courier'>RewardScaling</font> transforms touch only counters and rewards) → the MLP input layer "
+        "(86 units). At deployment the same vector is posted to the inference API (Section 3.3). In a real district, "
+        "the crew-state values would come from the truck's fuel gauge, the job ledger and stock records, and the per-point "
+        "values from the water-point register and the capstone classifier.",
         st["body"]))
 
     s.append(P("2.4 Reward Structure", st["h2"]))
@@ -158,6 +186,22 @@ def build():
         "can orbit, pan, zoom and tilt the camera, follow the truck, and click any water point to open a details panel "
         "with its features, its true status and the crew's belief (Figure 2).", st["body"]))
     s.append(figure(ASSETS / "env_closeup.png", 13.5, "Figure 2 - Close-up view with the details panel of a selected water point.", st))
+
+    s.append(P("2.7 Why Reinforcement Learning?", st["h2"]))
+    s.extend(bullets([
+        "<b>Actions change persistent state.</b> Every action moves the crew, burns fuel, spends budget or kits, and "
+        "refreshes or ages the agent's knowledge. Today's choice changes which choices are possible and sensible tomorrow, "
+        "so the problem is sequential, not a sequence of independent predictions.",
+        "<b>Delayed trade-offs.</b> A repair pays off over every remaining day of the horizon. A long trip now can leave "
+        "too little fuel to reach the next failure. Skipping a refuel is free today but can strand the truck a week later. "
+        "Choosing well requires credit assignment over many days, which is what value functions and returns provide.",
+        "<b>Partial observability and information-gathering.</b> True statuses degrade silently, so the agent must decide "
+        "when stale information is worth a dedicated inspection trip: an exploration-exploitation trade-off inside the task.",
+        "<b>No labelled optimal action.</b> The capstone classifier answers <i>which point is likely broken</i>, but no "
+        "dataset says <i>what the crew should do next</i>, so supervised learning has no target. With 15 actions over 90 days "
+        "(15<sup>90</sup> action sequences) and stochastic failures, exhaustive planning is infeasible. A learned policy "
+        "beats the hand-written dispatch rule (Section 5), so the learning is doing real work.",
+    ], st))
 
     # ------------------------------------------------------------ 3 system design
     s.append(P("3. System Analysis and Design", st["h1"]))
@@ -193,6 +237,26 @@ def build():
         "<font face='Courier'>RewardSum</font>, <font face='Courier'>RewardScaling</font> 0.1), the same 300k-step budget and "
         "seed 0. A greedy evaluation runs every 10k steps on 20 held-out seeds, and the best checkpoint is kept. Final "
         "numbers come from 100 further unseen seeds.", st["body"]))
+
+    s.append(P("3.3 Serialization and Integration", st["h2"]))
+    s.append(P(
+        "Each run saves a <font face='Courier'>torch.save</font> checkpoint (<font face='Courier'>state_dict</font>, run "
+        "config, observation and action sizes, evaluation metrics). The best run of each sweep is copied to "
+        "<font face='Courier'>models/&lt;dqn|pg&gt;/best_&lt;algo&gt;.pt</font>, with its metrics in a JSON file next to it. "
+        "<font face='Courier'>deployment/api.py</font> rebuilds the network from that file alone, with no TorchRL or "
+        "training code needed. It exposes the policy in two ways:", st["body"]))
+    s.extend(bullets([
+        "<b>Python:</b> <font face='Courier'>DispatchAgent(\"dqn\").recommend(obs)</font> returns the action id, its "
+        "name (e.g. <i>drive to WP06</i>), the Q-values (DQN) or action probabilities (PG), and the model run.",
+        "<b>HTTP JSON</b> (standard library only): <font face='Courier'>python -m deployment.api --algo dqn</font> serves "
+        "<font face='Courier'>GET /health</font> and <font face='Courier'>POST /recommend {\"observation\": [86 floats]}</font>. "
+        "A district dashboard or mobile app can post the crew's current state each morning and show the recommended job.",
+    ], st))
+    s.append(P(
+        "<font face='Courier'>play.py</font> (an alias of <font face='Courier'>main.py</font>) loads the same checkpoints, "
+        "runs the agent in the 3D simulation and prints a per-step terminal log. "
+        "<font face='Courier'>tests/test_api.py</font> checks that every saved model produces valid actions in the environment.",
+        st["body"]))
 
     # ------------------------------------------------------------ 4 implementation (hyperparameter tables)
     s.append(P("4. Implementation", st["h1"]))

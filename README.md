@@ -76,17 +76,15 @@ On **new random district layouts**, PPO generalises best (−42.2), while DQN dr
 the training map. Some A2C configurations learned to **reward-hack**: they strand the truck to end episodes early.
 The full discussion is in the report.
 
-## Report and beginner's guide
+## Report and video
 
 - [Video recording](https://drive.google.com/file/d/1b7FJDYws_Z5TigKxVWl2JihTqN7kKaVu/view?usp=sharing): 5-minute walkthrough of the problem and the trained agent running in the 3D simulation.
 - `report/Mahamat_RL_Summative_Report.pdf`: the assignment report (8 pages).
-- `report/RL_Beginners_Guide.pdf`: a step-by-step explanation for readers with no RL background, including the video script.
 
-To rebuild both from the logs:
+To rebuild it from the logs:
 
 ```bash
 uv run --with reportlab python report/build_report.py
-uv run --with reportlab python report/build_guide.py
 ```
 
 ## Quick start
@@ -160,6 +158,6 @@ The sweep configurations are the `SWEEP` / `SWEEPS` lists in `training/dqn_train
 ├── models/dqn, models/pg      # checkpoints; best_<algo>.pt is the best run of each sweep
 ├── logs/<algo>/               # learning curve CSV per run + summary.csv per sweep
 ├── assets/                    # screenshots and figures
-├── report/                    # report + beginner's guide PDFs and their build scripts
+├── report/                    # report PDF and its build scripts
 └── tests/
 ```

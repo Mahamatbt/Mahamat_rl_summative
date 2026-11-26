@@ -24,7 +24,7 @@ LOGS = ROOT / "logs"
 
 STUDENT = "Mahamat Bakhit Tidjani"
 GITHUB = "https://github.com/Mahamatbt/Mahamat_rl_summative"
-VIDEO = "[add your video link here]"
+VIDEO = "https://drive.google.com/file/d/1b7FJDYws_Z5TigKxVWl2JihTqN7kKaVu/view?usp=sharing"
 
 # Fonts with Greek glyphs (gamma, lambda, epsilon) - fall back to Helvetica elsewhere
 FONT, FONT_B, FONT_I = "Helvetica", "Helvetica-Bold", "Helvetica-Oblique"

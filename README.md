@@ -7,6 +7,8 @@ It extends my capstone, which classifies the status of Tanzanian water points (t
 Four algorithms are trained with **TorchRL** on the same custom Gymnasium environment and compared:
 **DQN** (value-based) and **REINFORCE, PPO, A2C** (policy-gradient).
 
+**Video demo (5 min):** https://drive.google.com/file/d/1b7FJDYws_Z5TigKxVWl2JihTqN7kKaVu/view?usp=sharing
+
 ![environment](assets/env_screenshot.png)
 
 ## The problem
@@ -76,6 +78,7 @@ The full discussion is in the report.
 
 ## Report and beginner's guide
 
+- [Video recording](https://drive.google.com/file/d/1b7FJDYws_Z5TigKxVWl2JihTqN7kKaVu/view?usp=sharing): 5-minute walkthrough of the problem and the trained agent running in the 3D simulation.
 - `report/Mahamat_RL_Summative_Report.pdf`: the assignment report (8 pages).
 - `report/RL_Beginners_Guide.pdf`: a step-by-step explanation for readers with no RL background, including the video script.
 

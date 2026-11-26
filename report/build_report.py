@@ -78,7 +78,7 @@ def build():
     # ------------------------------------------------------------ title
     s.append(P("Reinforcement Learning Summative Assignment Report", st["title"]))
     s.append(P(f"<b>Student:</b> {STUDENT}", st["subtitle"]))
-    s.append(P(f"<b>Video recording:</b> {VIDEO}", st["subtitle"]))
+    s.append(P(f'<b>Video recording:</b> <link href="{VIDEO}" color="#2a78d6">{VIDEO}</link>', st["subtitle"]))
     s.append(P(f'<b>GitHub repository:</b> <link href="{GITHUB}" color="#2a78d6">{GITHUB}</link>', st["subtitle"]))
     s.append(Spacer(1, 4))
 

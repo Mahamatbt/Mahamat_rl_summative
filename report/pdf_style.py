@@ -1,7 +1,6 @@
-"""Shared ReportLab styles and helpers for the report and the beginner's guide.
+"""Shared ReportLab styles and helpers for the report.
 
 Build with:  uv run --with reportlab python report/build_report.py
-             uv run --with reportlab python report/build_guide.py
 """
 
 from __future__ import annotations
